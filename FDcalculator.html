@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixed Deposit Calculator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .calculator {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 22px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        
+        .description {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+        }
+        
+        .input-container {
+            position: relative;
+        }
+        
+        input[type="number"], input[type="text"], select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input[type="number"]:focus, input[type="text"]:focus, select:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        input::placeholder {
+            color: #999;
+            opacity: 1;
+        }
+        
+        .compounding-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .compounding-option {
+            padding: 10px 15px;
+            background-color: #f1f1f1;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .compounding-option.selected {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .range-slider {
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .result-container {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .result-label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .result-value {
+            font-weight: 700;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+        
+        .about-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .calculator {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>FIXED DEPOSIT CALCULATOR</h1>
+        <p class="description">Wish to calculate the returns on your FD? Calculate the amount that you would receive at the end with added interest using our Fixed Deposit Calculator.</p>
+        
+        <div class="input-group">
+            <label for="fd-amount">Amount Deposited *</label>
+            <div class="input-container">
+                <input type="number" id="fd-amount" placeholder="Ex. 100000" oninput="updateSlider(this.value); calculateFD()">
+                <input type="range" id="fd-amount-slider" min="1000" max="50000000" step="1000" value="100000" class="range-slider" oninput="updateAmount(this.value); calculateFD()">
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label for="fd-tenure">Tenure in years (up to 50 years) *</label>
+            <input type="number" id="fd-tenure" min="1" max="50" placeholder="Ex. 5" oninput="calculateFD()">
+        </div>
+        
+        <div class="input-group">
+            <label for="fd-rate">Interest Rate % (P.A) *</label>
+            <input type="number" id="fd-rate" step="0.1" placeholder="Ex. 7.5" oninput="calculateFD()">
+        </div>
+        
+        <div class="input-group">
+            <label for="fd-frequency">Compounding Frequency:*</label>
+            <div class="compounding-options">
+                <div class="compounding-option selected" onclick="selectOption(this, 'yearly'); calculateFD()">Yearly</div>
+                <div class="compounding-option" onclick="selectOption(this, 'half-yearly'); calculateFD()">Half-Yearly</div>
+                <div class="compounding-option" onclick="selectOption(this, 'quarterly'); calculateFD()">Quarterly</div>
+                <div class="compounding-option" onclick="selectOption(this, 'monthly'); calculateFD()">Monthly</div>
+            </div>
+        </div>
+        
+        <div class="result-container">
+            <div class="result-item">
+                <span class="result-label">Maturity Amount:</span>
+                <span class="result-value" id="fd-maturity-amount">₹ 0</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Interest Earned:</span>
+                <span class="result-value" id="fd-interest-earned">₹ 0</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Total Amount Deposited:</span>
+                <span class="result-value" id="fd-total-deposited">₹ 0</span>
+            </div>
+        </div>
+        
+        <div class="about-section">
+            Finoledge Fixed Deposit Calculator
+        </div>
+    </div>
+
+    <script>
+        let currentFrequency = 'yearly';
+        
+        function selectOption(element, frequency) {
+            const options = element.parentElement.querySelectorAll('.compounding-option');
+            options.forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            currentFrequency = frequency;
+        }
+        
+        function updateAmount(value) {
+            document.getElementById('fd-amount').value = formatNumberInput(value);
+            calculateFD();
+        }
+        
+        function updateSlider(value) {
+            const slider = document.getElementById('fd-amount-slider');
+            const numValue = parseNumberInput(value);
+            
+            if (isNaN(numValue)) return;
+            
+            if (numValue < slider.min) {
+                slider.value = slider.min;
+                document.getElementById('fd-amount').value = formatNumberInput(slider.min);
+            } else if (numValue > slider.max) {
+                slider.value = slider.max;
+                document.getElementById('fd-amount').value = formatNumberInput(slider.max);
+            } else {
+                slider.value = numValue;
+            }
+            
+            calculateFD();
+        }
+        
+        function calculateFD() {
+            const principal = parseNumberInput(document.getElementById('fd-amount').value);
+            const rate = parseNumberInput(document.getElementById('fd-rate').value) / 100;
+            const years = parseNumberInput(document.getElementById('fd-tenure').value);
+            
+            if (isNaN(principal) || isNaN(rate) || isNaN(years)) return;
+            
+            let n = 1; // compounding frequency
+            switch(currentFrequency) {
+                case 'monthly':
+                    n = 12;
+                    break;
+                case 'quarterly':
+                    n = 4;
+                    break;
+                case 'half-yearly':
+                    n = 2;
+                    break;
+                case 'yearly':
+                    n = 1;
+                    break;
+            }
+            
+            const amount = principal * Math.pow(1 + (rate / n), n * years);
+            const interest = amount - principal;
+            
+            document.getElementById('fd-maturity-amount').textContent = '₹ ' + formatNumberOutput(amount);
+            document.getElementById('fd-interest-earned').textContent = '₹ ' + formatNumberOutput(interest);
+            document.getElementById('fd-total-deposited').textContent = '₹ ' + formatNumberOutput(principal);
+        }
+        
+        function formatNumberInput(num) {
+            // Remove all non-digit characters
+            return num.toString().replace(/\D/g, '');
+        }
+        
+        function parseNumberInput(num) {
+            // Parse as float after removing commas
+            return parseFloat(num.toString().replace(/,/g, ''));
+        }
+        
+        function formatNumberOutput(num) {
+            // Format with commas and 2 decimal places
+            return num.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        }
+        
+        // Initialize calculator
+        window.onload = function() {
+            calculateFD();
+        };
+    </script>
+</body>
+</html>
